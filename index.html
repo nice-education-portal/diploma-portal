@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Diploma Verification & Admin Portal</title>
+  <!-- Google Fonts for Multiple Distinct Institute Designs -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Great+Vibes&family=Lora:ital,wght@0,600;0,700;1,500&family=Merriweather:wght@700;900&family=Montserrat:wght@400;500;600;700&family=Oswald:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <!-- QR Code Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Direct PDF Download Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      --navy: #0f2537;
+      --gold: #c59b27;
+      --bg-dark: #0f172a;
+      --bg-panel: #f4f6f9;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-dark);
+      color: #1e293b;
+      min-height: 100vh;
+    }
+
+    /* ================= 1. STUDENT PORTAL SCREEN ================= */
+    #portal-screen {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #0f2537 0%, #1e293b 100%);
+    }
+
+    .login-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 430px;
+      border-radius: 12px;
+      padding: 30px 28px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      border-top: 5px solid var(--gold);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .login-header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 20px;
+      color: var(--navy);
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .login-header p {
+      font-size: 12.5px;
+      color: #64748b;
+    }
+
+    .portal-group {
+      margin-bottom: 16px;
+    }
+
+    .portal-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .portal-group input, .portal-group select {
+      width: 100%;
+      padding: 11px 14px;
+      font-size: 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 7px;
+      outline: none;
+      background: #ffffff;
+      transition: 0.2s;
+    }
+
+    .portal-group input:focus, .portal-group select:focus {
+      border-color: var(--navy);
+    }
+
+    .btn-verify {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, var(--navy), #1e40af);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      margin-top: 6px;
+      box-shadow: 0 4px 12px rgba(15, 37, 55, 0.3);
+    }
+
+    .btn-verify:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .error-msg {
+      color: #dc2626;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* ================= 2. STUDENT CERTIFICATE VIEW ================= */
+    #student-view-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background: #1e293b;
+      min-height: 100vh;
+    }
+
+    .student-top-actions {
+      width: 100%;
+      max-width: 297mm;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .action-btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-back {
+      padding: 9px 15px;
+      background: #475569;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-download-pdf {
+      padding: 10px 18px;
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-download-pdf:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .btn-print-alt {
+      padding: 10px 15px;
+      background: #0f2537;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .student-cert-scroll {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+
+    /* ================= 3. ADMIN PANEL WORKSPACE ================= */
+    #admin-screen {
+      display: none;
+      min-height: 100vh;
+      background: #1e293b;
+    }
+
+    .admin-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .editor-sidebar {
+      width: 420px;
+      background: #ffffff;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 18px;
+      border-right: 1px solid #cbd5e1;
+      box-shadow: 4px 0 15px rgba(0, 0, 0, 0.25);
+      z-index: 10;
+    }
+
+    .admin-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--gold);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+
+    .admin-header-bar h2 {
+      font-size: 16px;
+      color: var(--navy);
+    }
+
+    .db-badge {
+      font-size: 10px;
+      background: #dcfce7;
+      color: #166534;
+      padding: 3px 7px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .btn-logout {
+      background: #dc2626;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .section-card {
+      background: var(--bg-panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-card h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--navy);
+      margin-bottom: 10px;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 9px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 3px;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 7px 9px;
+      font-size: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      outline: none;
+      background: #fff;
+    }
+
+    .theme-pill {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #1d4ed8;
+      background: #dbeafe;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    /* Saved Records Table in Admin */
+    .records-list {
+      max-height: 190px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+
+    .record-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 11.5px;
+    }
+
+    .record-item:last-child {
+      border-bottom: none;
+    }
+
+    .record-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .btn-edit {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      cursor: pointer;
+    }
+
+    .btn-del {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      cursor: pointer;
+    }
+
+    /* Signature Tabs */
+    .sign-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .sign-tab {
+      flex: 1;
+      padding: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      background: #e2e8f0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #334155;
+    }
+
+    .sign-tab.active {
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .sign-mode-box {
+      display: none;
+    }
+
+    .sign-mode-box.active {
+      display: block;
+    }
+
+    .pad-container {
+      border: 1px dashed #94a3b8;
+      background: #ffffff;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .btn-small {
+      margin-top: 5px;
+      padding: 4px 10px;
+      font-size: 11px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-save-record {
+      width: 100%;
+      padding: 11px;
+      background: #16a34a;
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 700;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    .btn-save-record:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-new-record {
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      cursor: pointer;
+    }
+
+    .btn-print {
+      width: 100%;
+      padding: 11px;
+      background: linear-gradient(135deg, var(--navy), #1e40af);
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 700;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .btn-direct-pdf-admin {
+      width: 100%;
+      padding: 11px;
+      background: #0d9488;
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 700;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    /* Right Live Preview Workspace */
+    .preview-workspace {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow: auto;
+      height: 100vh;
+    }
+
+    /* ================= CERTIFICATE BASE SIZE (FIXED A4 LANDSCAPE) ================= */
+    .certificate-wrapper {
+      width: 297mm;
+      height: 210mm;
+      background: #ffffff;
+      position: relative;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+      padding: 10mm;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      transition: all 0.25s ease;
+    }
+
+    .border-outer {
+      width: 100%;
+      height: 100%;
+      border: 4px solid #0f2537;
+      padding: 4px;
+      position: relative;
+    }
+
+    .border-inner {
+      width: 100%;
+      height: 100%;
+      border: 1.5px solid #c59b27;
+      padding: 18px 32px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #ffffff 60%, #f8fafc 100%);
+    }
+
+    /* Corner Ornaments (Visible in selected dynamic themes) */
+    .corner-ornament {
+      display: none;
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border-color: currentColor;
+      border-style: solid;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .corner-tl { top: 8px; left: 8px; border-width: 4px 0 0 4px; }
+    .corner-tr { top: 8px; right: 8px; border-width: 4px 4px 0 0; }
+    .corner-bl { bottom: 8px; left: 8px; border-width: 0 0 4px 4px; }
+    .corner-br { bottom: 8px; right: 8px; border-width: 0 4px 4px 0; }
+
+    .watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-28deg);
+      font-family: 'Cinzel', serif;
+      font-size: 85px;
+      font-weight: 800;
+      color: rgba(15, 37, 55, 0.045);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: 8px;
+      z-index: 0;
+    }
+
+    .cert-top-bar {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+      z-index: 1;
+    }
+
+    .cert-header {
+      text-align: center;
+      z-index: 1;
+      margin-top: -5px;
+    }
+
+    .institute-name {
+      font-family: 'Cinzel', serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f2537;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .institute-sub {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
+      letter-spacing: 0.4px;
+    }
+
+    .cert-title {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #c59b27;
+      margin-top: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .presented-text {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 14px;
+      color: #475569;
+      margin-top: 3px;
+    }
+
+    .cert-center-area {
+      position: relative;
+      text-align: center;
+      z-index: 1;
+      margin: 6px 0;
+    }
+
+    .student-name {
+      font-family: 'Cinzel', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #0f2537;
+      display: inline-block;
+      border-bottom: 2px solid #c59b27;
+      padding: 0 35px 4px 35px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .parent-line {
+      font-size: 13px;
+      color: #334155;
+      margin-top: 6px;
+    }
+
+    .parent-line span {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .course-desc {
+      font-size: 13.5px;
+      color: #334155;
+      margin-top: 10px;
+    }
+
+    .course-title {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: #0f2537;
+      margin-top: 4px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .photo-frame {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 95px;
+      height: 115px;
+      border: 2px solid #0f2537;
+      padding: 3px;
+      background: #fff;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .info-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f1f5f9;
+      border-top: 1px solid #cbd5e1;
+      border-bottom: 1px solid #cbd5e1;
+      padding: 7px 45px;
+      font-size: 12.5px;
+      color: #1e293b;
+      z-index: 1;
+    }
+
+    .info-strip strong {
+      color: #0f2537;
+    }
+
+    .cert-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 15px;
+      z-index: 1;
+    }
+
+    .sig-box {
+      width: 210px;
+      text-align: center;
+    }
+
+    .sig-display {
+      height: 52px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 3px;
+    }
+
+    .sig-display img {
+      max-height: 48px;
+      max-width: 180px;
+      object-fit: contain;
+    }
+
+    .sig-typed-text {
+      font-family: 'Great Vibes', cursive;
+      font-size: 30px;
+      color: #0f2537;
+      line-height: 1;
+    }
+
+    .sig-line {
+      border-top: 1.5px solid #334155;
+      padding-top: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .center-badges {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-holder {
+      padding: 5px;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+    }
+
+    /* ================= DYNAMIC INSTITUTE THEMES (SAME A4 SIZE, DIFFERENT LOOK) ================= */
+
+    /* Theme 1: Royal Emerald & Bronze */
+    .theme-emerald .border-outer { border: 5px double #064e3b; }
+    .theme-emerald .border-inner {
+      border: 2px solid #b45309;
+      background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 28%, #ffffff 72%, #ecfdf5 100%);
+    }
+    .theme-emerald .corner-ornament { display: block; color: #064e3b; }
+    .theme-emerald .institute-name { font-family: 'Merriweather', serif; color: #064e3b; font-size: 24px; }
+    .theme-emerald .cert-title {
+      background: #064e3b; color: #fef3c7; display: inline-block; padding: 4px 28px;
+      border-radius: 30px; font-size: 18px; letter-spacing: 2.5px;
+    }
+    .theme-emerald .student-name { font-family: 'Cormorant Garamond', serif; font-size: 31px; color: #064e3b; border-bottom: 2px dashed #b45309; }
+    .theme-emerald .course-title { color: #92400e; }
+    .theme-emerald .info-strip { background: #d1fae5; border-color: #6ee7b7; border-radius: 6px; }
+    .theme-emerald .photo-frame { border-color: #064e3b; border-radius: 6px; left: 12px; right: auto; }
+    .theme-emerald .watermark { color: rgba(6, 78, 59, 0.05); transform: translate(-50%, -50%) rotate(0deg); font-size: 75px; }
+
+    /* Theme 2: Crimson & Antique Gold Heritage */
+    .theme-crimson .border-outer { border: 6px solid #7f1d1d; padding: 6px; }
+    .theme-crimson .border-inner {
+      border: 2px dashed #ca8a04;
+      background: radial-gradient(circle, #fffbeb 0%, #ffffff 65%, #fef2f2 100%);
+    }
+    .theme-crimson .institute-name { font-family: 'Playfair Display', serif; color: #7f1d1d; font-size: 27px; letter-spacing: 0.8px; }
+    .theme-crimson .cert-title { color: #b45309; font-family: 'Playfair Display', serif; font-size: 24px; border-top: 1px solid #fca5a5; border-bottom: 1px solid #fca5a5; display: inline-block; padding: 2px 30px; }
+    .theme-crimson .student-name { font-family: 'Playfair Display', serif; color: #7f1d1d; border-bottom: 2px solid #7f1d1d; }
+    .theme-crimson .course-title { color: #991b1b; }
+    .theme-crimson .info-strip { background: #fee2e2; border-top: 2px solid #7f1d1d; border-bottom: 2px solid #7f1d1d; }
+    .theme-crimson .photo-frame { border: 3px double #7f1d1d; }
+    .theme-crimson .watermark { color: rgba(127, 29, 29, 0.045); }
+
+    /* Theme 3: Modern Tech Royal Blue */
+    .theme-techblue .border-outer { border: 3px solid #1e3a8a; border-radius: 12px; }
+    .theme-techblue .border-inner {
+      border: 2px solid #3b82f6; border-radius: 8px;
+      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 45%, #ffffff 55%, #eff6ff 100%);
+    }
+    .theme-techblue .institute-name { font-family: 'Oswald', sans-serif; color: #1e3a8a; font-size: 28px; letter-spacing: 1.8px; }
+    .theme-techblue .cert-title { color: #2563eb; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: 3px; }
+    .theme-techblue .student-name { font-family: 'Montserrat', sans-serif; font-weight: 800; color: #1e3a8a; border-bottom: 3px solid #2563eb; }
+    .theme-techblue .course-title { color: #1d4ed8; }
+    .theme-techblue .info-strip { background: #1e3a8a; color: #ffffff; border: none; border-radius: 4px; }
+    .theme-techblue .info-strip strong { color: #93c5fd; }
+    .theme-techblue .photo-frame { border-color: #2563eb; border-radius: 8px; }
+    .theme-techblue .watermark { color: rgba(30, 58, 138, 0.045); }
+
+    /* Theme 4: Imperial Purple & Silver-Gold */
+    .theme-purple .border-outer { border: 5px solid #4c1d95; }
+    .theme-purple .border-inner {
+      border: 1.5px solid #d97706;
+      background: radial-gradient(circle at top, #f5f3ff 0%, #ffffff 55%, #faf5ff 100%);
+    }
+    .theme-purple .corner-ornament { display: block; color: #d97706; }
+    .theme-purple .institute-name { font-family: 'Lora', serif; color: #4c1d95; font-size: 25px; }
+    .theme-purple .cert-title { color: #6d28d9; font-family: 'Lora', serif; font-style: italic; font-size: 24px; text-transform: capitalize; }
+    .theme-purple .student-name { font-family: 'Lora', serif; color: #4c1d95; border-bottom: 2px solid #d97706; }
+    .theme-purple .course-title { color: #5b21b6; }
+    .theme-purple .info-strip { background: #ede9fe; border-color: #c4b5fd; }
+    .theme-purple .photo-frame { border-color: #4c1d95; left: 12px; right: auto; }
+    .theme-purple .watermark { color: rgba(76, 29, 149, 0.045); }
+
+    /* Theme 5: Slate Charcoal & Copper Executive */
+    .theme-copper .border-outer { border: 4px solid #27272a; padding: 5px; }
+    .theme-copper .border-inner {
+      border: 2px solid #9a3412;
+      background: linear-gradient(to right, #fafafa, #ffffff, #fafafa);
+    }
+    .theme-copper .institute-name { font-family: 'Merriweather', serif; color: #18181b; font-size: 24px; letter-spacing: 1px; }
+    .theme-copper .cert-title { color: #9a3412; letter-spacing: 3px; font-size: 21px; }
+    .theme-copper .student-name { font-family: 'Cinzel', serif; color: #18181b; border-bottom: 2px solid #9a3412; }
+    .theme-copper .course-title { color: #9a3412; }
+    .theme-copper .info-strip { background: #f4f4f5; border-top: 1.5px solid #27272a; border-bottom: 1.5px solid #27272a; }
+    .theme-copper .photo-frame { border-color: #9a3412; }
+    .theme-copper .watermark { color: rgba(24, 24, 27, 0.04); }
+
+    /* Theme 6: Deep Teal & Saffron Academy */
+    .theme-teal .border-outer { border: 5px double #115e59; }
+    .theme-teal .border-inner {
+      border: 1.5px solid #ea580c;
+      background: radial-gradient(circle at bottom, #f0fdfa 0%, #ffffff 65%);
+    }
+    .theme-teal .corner-ornament { display: block; color: #ea580c; }
+    .theme-teal .institute-name { font-family: 'Cinzel', serif; color: #115e59; font-size: 25px; }
+    .theme-teal .cert-title { color: #ea580c; font-size: 22px; }
+    .theme-teal .student-name { font-family: 'Playfair Display', serif; color: #115e59; border-bottom: 2px solid #ea580c; }
+    .theme-teal .course-title { color: #0f766e; }
+    .theme-teal .info-strip { background: #ccfbf1; border-color: #5eead4; }
+    .theme-teal .photo-frame { border-color: #115e59; }
+    .theme-teal .watermark { color: rgba(17, 94, 89, 0.045); }
+
+    /* Responsive Scaling */
+    @media (max-width: 1100px) {
+      .admin-layout {
+        flex-direction: column;
+      }
+      .editor-sidebar {
+        width: 100%;
+        height: auto;
+      }
+      .preview-workspace {
+        height: auto;
+        padding: 15px;
+        overflow-x: auto;
+        justify-content: flex-start;
+      }
+      .student-cert-scroll {
+        justify-content: flex-start;
+      }
+    }
+
+    /* Print Styling */
+    @media print {
+      body {
+        background: none;
+      }
+      #portal-screen,
+      .editor-sidebar,
+      .student-top-actions {
+        display: none !important;
+      }
+      #student-view-screen,
+      #admin-screen,
+      .preview-workspace,
+      .student-cert-scroll {
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: none !important;
+      }
+      .certificate-wrapper {
+        box-shadow: none;
+        width: 297mm;
+        height: 210mm;
+        margin: 0;
+      }
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== 1. STUDENT LOGIN / RESULT VERIFICATION ==================== -->
+  <div id="portal-screen">
+    <div class="login-card">
+      <div class="login-header">
+        <h1>DIPLOMA VERIFICATION PORTAL</h1>
+        <p>Enter your Roll Number and select Passing Year to view or download your Diploma Certificate</p>
+      </div>
+
+      <div class="portal-group">
+        <label>Roll Number</label>
+        <input type="text" id="login_roll" placeholder="Enter Roll Number..." oninput="checkAdminTyping()" />
+      </div>
+
+      <div class="portal-group" id="year_field_group">
+        <label>Select Passing Year</label>
+        <select id="login_year">
+          <!-- Years 1990 to 2099 automatically populated via JS -->
+        </select>
+      </div>
+
+      <button class="btn-verify" id="btn_verify" onclick="handlePortalSubmit()">View Result / Proceed</button>
+      <div class="error-msg" id="login_error">No record found for this Roll Number & Year!</div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. STUDENT CERTIFICATE RESULT SCREEN ==================== -->
+  <div id="student-view-screen">
+    <div class="student-top-actions">
+      <button class="btn-back" onclick="backToPortal()">← Back to Search</button>
+      <div style="font-size: 13px; font-weight: 700; color: #0f2537;">Verified Diploma Certificate</div>
+      <div class="action-btn-group">
+        <button class="btn-download-pdf" id="btn_student_direct_pdf" onclick="downloadDirectPDF('student_cert_mount', this)">⬇ Download Direct PDF</button>
+        <button class="btn-print-alt" onclick="window.print()">Print</button>
+      </div>
+    </div>
+
+    <div class="student-cert-scroll" id="student_cert_mount">
+      <!-- Certificate gets rendered here for student -->
+    </div>
+  </div>
+
+  <!-- ==================== 3. ADMIN PANEL SCREEN ==================== -->
+  <div id="admin-screen">
+    <div class="admin-layout">
+      
+      <!-- Left Sidebar Controls -->
+      <div class="editor-sidebar">
+        <div class="admin-header-bar">
+          <div>
+            <h2>Admin Diploma Panel</h2>
+            <span class="db-badge" id="firebase_status_badge">● Firebase Cloud Connected</span>
+          </div>
+          <button class="btn-logout" onclick="backToPortal()">Logout</button>
+        </div>
+
+        <!-- Admin Secret Roll Number Settings -->
+        <div class="section-card" style="border-left: 4px solid #dc2626;">
+          <h3>Admin Secret Access Code</h3>
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:0;">
+              <input type="text" id="admin_secret_input" placeholder="New Secret Roll No." />
+            </div>
+            <button class="btn-save-record" style="margin-top:0; padding:7px; font-size:12px;" onclick="updateAdminSecret()">Update Code</button>
+          </div>
+          <div id="secret_status" style="font-size:11px; color:#16a34a; margin-top:4px; display:none;">Admin code updated in Firebase!</div>
+        </div>
+
+        <!-- Saved Students Records (Edit / Delete) -->
+        <div class="section-card">
+          <h3>
+            <span>Cloud Diplomas (<span id="record_count">0</span>)</span>
+            <button class="btn-new-record" onclick="resetFormForNew()">+ New Diploma</button>
+          </h3>
+          <div class="records-list" id="saved_records_list">
+            <div style="padding:12px; font-size:11px; color:#64748b; text-align:center;">Loading from Firebase...</div>
+          </div>
+        </div>
+
+        <!-- Institute & Meta -->
+        <div class="section-card">
+          <h3>Institute & Auto-Design Style</h3>
+          <div class="form-group">
+            <label>Institute Name (Change Name = Auto New Interface)</label>
+            <input type="text" id="in_inst" value="NATIONAL INSTITUTE OF COMPUTER EDUCATION" oninput="syncLivePreview()" />
+            <span class="theme-pill" id="active_theme_label">Active Style: Classic Navy & Gold</span>
+          </div>
+          <div class="form-group">
+            <label>Subtitle / Accreditation</label>
+            <input type="text" id="in_sub" value="An ISO 9001:2015 Certified Institution | Registered Under Govt. of India" oninput="syncLivePreview()" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Sr. No.</label>
+              <input type="text" id="in_sr" value="NICE/2026/1024" oninput="syncLivePreview()" />
+            </div>
+            <div class="form-group">
+              <label>Issue Date</label>
+              <input type="text" id="in_date" value="25 Aug 2026" oninput="syncLivePreview()" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Select Passing Year</label>
+              <select id="in_pass_year" onchange="syncLivePreview()">
+                <!-- Years 1990 to 2099 automatically populated via JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Watermark Text</label>
+              <input type="text" id="in_watermark" value="NICE CERTIFIED" oninput="syncLivePreview()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Student Details -->
+        <div class="section-card">
+          <h3>Student & Course Details</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Student Name</label>
+              <input type="text" id="in_student" value="MR. RINKU SINGH" oninput="syncLivePreview()" />
+            </div>
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="text" id="in_dob" value="15 May 2002" placeholder="e.g. 15 May 2002" oninput="syncLivePreview()" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Relation</label>
+              <select id="in_rel" onchange="syncLivePreview()">
+                <option value="Son/Daughter of">Son/Daughter of</option>
+                <option value="Son of">Son of</option>
+                <option value="Daughter of">Daughter of</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Father's Name</label>
+              <input type="text" id="in_father" value="Shri Kishan Pal Singh" oninput="syncLivePreview()" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Course Name</label>
+            <input type="text" id="in_course" value="DIPLOMA IN COMPUTER APPLICATION (DCA)" oninput="syncLivePreview()" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Custom Roll No.</label>
+              <input type="text" id="in_roll" value="5886858" placeholder="Any custom roll no." oninput="syncLivePreview()" />
+            </div>
+            <div class="form-group">
+              <label>Duration</label>
+              <input type="text" id="in_duration" value="12 Months" oninput="syncLivePreview()" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Grade / Result</label>
+              <input type="text" id="in_grade" value="A+ (Distinction)" oninput="syncLivePreview()" />
+            </div>
+            <div class="form-group">
+              <label>Student Photo</label>
+              <input type="file" accept="image/*" onchange="loadPhoto(this)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Signature 1: Course Coordinator -->
+        <div class="section-card">
+          <h3>1. Course Coordinator Sign</h3>
+          <div class="sign-tabs">
+            <button class="sign-tab active" onclick="switchSignMode('coord', 'draw', this)">Draw</button>
+            <button class="sign-tab" onclick="switchSignMode('coord', 'type', this)">Type Font</button>
+            <button class="sign-tab" onclick="switchSignMode('coord', 'upload', this)">Upload</button>
+          </div>
+          <div id="coord_draw" class="sign-mode-box active">
+            <div class="pad-container">
+              <canvas id="canvas_coord" width="340" height="70"></canvas>
+            </div>
+            <button class="btn-small" onclick="clearPad('coord')">Clear Pad</button>
+          </div>
+          <div id="coord_type" class="sign-mode-box">
+            <div class="form-group">
+              <input type="text" id="type_coord_input" placeholder="Type coordinator name..." value="A. K. Sharma" oninput="updateTypedSign('coord')" />
+            </div>
+          </div>
+          <div id="coord_upload" class="sign-mode-box">
+            <div class="form-group">
+              <input type="file" accept="image/*" onchange="uploadSignImg(this, 'coord')" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Signature 2: Authorized Director -->
+        <div class="section-card">
+          <h3>2. Authorized Director Sign</h3>
+          <div class="sign-tabs">
+            <button class="sign-tab active" onclick="switchSignMode('dir', 'draw', this)">Draw</button>
+            <button class="sign-tab" onclick="switchSignMode('dir', 'type', this)">Type Font</button>
+            <button class="sign-tab" onclick="switchSignMode('dir', 'upload', this)">Upload</button>
+          </div>
+          <div id="dir_draw" class="sign-mode-box active">
+            <div class="pad-container">
+              <canvas id="canvas_dir" width="340" height="70"></canvas>
+            </div>
+            <button class="btn-small" onclick="clearPad('dir')">Clear Pad</button>
+          </div>
+          <div id="dir_type" class="sign-mode-box">
+            <div class="form-group">
+              <input type="text" id="type_dir_input" placeholder="Type director name..." value="Dr. R. K. Verma" oninput="updateTypedSign('dir')" />
+            </div>
+          </div>
+          <div id="dir_upload" class="sign-mode-box">
+            <div class="form-group">
+              <input type="file" accept="image/*" onchange="uploadSignImg(this, 'dir')" />
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-save-record" id="btn_save_db" onclick="saveStudentDiploma()">Save / Update in Firebase</button>
+        <button class="btn-direct-pdf-admin" onclick="downloadDirectPDF('admin_cert_mount', this)">⬇ Download Direct PDF</button>
+        <button class="btn-print" onclick="window.print()">Print Diploma (A4 Landscape)</button>
+      </div>
+
+      <!-- Right Live Preview Area -->
+      <div class="preview-workspace" id="admin_cert_mount">
+        <!-- Certificate template is injected here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CERTIFICATE TEMPLATE ==================== -->
+  <template id="certificate_template">
+    <div class="certificate-wrapper cert-root">
+      <div class="border-outer">
+        <div class="border-inner">
+          <!-- Decorative Corners for Alternate Themes -->
+          <div class="corner-ornament corner-tl"></div>
+          <div class="corner-ornament corner-tr"></div>
+          <div class="corner-ornament corner-bl"></div>
+          <div class="corner-ornament corner-br"></div>
+
+          <div class="watermark cert-watermark">NICE CERTIFIED</div>
+
+          <div class="cert-top-bar">
+            <div>Sr. No: <span class="cert-sr">NICE/2026/1024</span></div>
+            <div>Date: <span class="cert-date">25 Aug 2026</span></div>
+          </div>
+
+          <div class="cert-header">
+            <div class="institute-name cert-inst">NATIONAL INSTITUTE OF COMPUTER EDUCATION</div>
+            <div class="institute-sub cert-sub">An ISO 9001:2015 Certified Institution | Registered Under Govt. of India</div>
+            <div class="cert-title">DIPLOMA CERTIFICATE</div>
+            <div class="presented-text">This is proudly presented to</div>
+          </div>
+
+          <div class="cert-center-area">
+            <div class="student-name cert-student">MR. RINKU SINGH</div>
+            <div class="parent-line">
+              <span class="cert-rel" style="font-weight:400;">Son/Daughter of</span> <span class="cert-father">Shri Kishan Pal Singh</span>
+              <span class="cert-dob-wrap"> &nbsp;|&nbsp; <span style="font-weight:400;">Date of Birth:</span> <span class="cert-dob">15 May 2002</span></span>
+            </div>
+            <div class="course-desc">has successfully completed the prescribed curriculum and examination for the course of</div>
+            <div class="course-title cert-course">DIPLOMA IN COMPUTER APPLICATION (DCA)</div>
+
+            <div class="photo-frame">
+              <img class="cert-photo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='120' viewBox='0 0 100 120'><rect width='100' height='120' fill='%23e2e8f0'/><circle cx='50' cy='42' r='20' fill='%2394a3b8'/><path d='M20 105 C20 75, 80 75, 80 105' fill='%2394a3b8'/></svg>" alt="Student Photo" />
+            </div>
+          </div>
+
+          <div class="info-strip">
+            <div><strong>Roll No:</strong> <span class="cert-roll">5886858</span></div>
+            <div><strong>Duration:</strong> <span class="cert-duration">12 Months</span></div>
+            <div><strong>Grade:</strong> <span class="cert-grade">A+ (Distinction)</span></div>
+          </div>
+
+          <div class="cert-footer">
+            <div class="sig-box">
+              <div class="sig-display cert-sign-coord"></div>
+              <div class="sig-line">Course Coordinator</div>
+            </div>
+
+            <div class="center-badges">
+              <div class="qr-holder cert-qr"></div>
+            </div>
+
+            <div class="sig-box">
+              <div class="sig-display cert-sign-dir"></div>
+              <div class="sig-line">Authorized Director</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Firebase Modular SDK (v10) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, get, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCayYIjRnsHujg05MOrtBm3mPPjQb9MjeE",
+      authDomain: "diploma-portal-e7d47.firebaseapp.com",
+      databaseURL: "https://diploma-portal-e7d47-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "diploma-portal-e7d47",
+      storageBucket: "diploma-portal-e7d47.firebasestorage.app",
+      messagingSenderId: "621701571653",
+      appId: "1:621701571653:web:665a77ae90119f513b2f2c",
+      measurementId: "G-FCSK0NNJ0L"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ================= DETERMINISTIC THEME ENGINE BY INSTITUTE NAME =================
+    const DEFAULT_INSTITUTE = "NATIONAL INSTITUTE OF COMPUTER EDUCATION";
+    const ALTERNATE_THEMES = [
+      { className: "theme-emerald", label: "Royal Emerald & Bronze" },
+      { className: "theme-crimson", label: "Crimson Heritage" },
+      { className: "theme-techblue", label: "Modern Tech Royal Blue" },
+      { className: "theme-purple", label: "Imperial Purple Academy" },
+      { className: "theme-copper", label: "Charcoal & Copper Executive" },
+      { className: "theme-teal", label: "Deep Teal & Saffron" }
+    ];
+
+    function getThemeForInstitute(instName) {
+      const normalized = (instName || "").trim().toUpperCase();
+      if (!normalized || normalized === DEFAULT_INSTITUTE) {
+        return { className: "", label: "Classic Navy & Gold (Default)" };
+      }
+      let hash = 0;
+      for (let i = 0; i < normalized.length; i++) {
+        hash = (hash * 31 + normalized.charCodeAt(i)) >>> 0;
+      }
+      return ALTERNATE_THEMES[hash % ALTERNATE_THEMES.length];
+    }
+
+    // ================= DIRECT PDF DOWNLOAD FUNCTION =================
+    window.downloadDirectPDF = async function(mountId, btnEl) {
+      const mountEl = document.getElementById(mountId);
+      const certElement = mountEl ? mountEl.querySelector(".certificate-wrapper") : null;
+
+      if (!certElement) {
+        alert("Certificate not found!");
+        return;
+      }
+
+      if (typeof html2pdf === "undefined") {
+        alert("PDF generator is still loading, please try again in 2 seconds.");
+        return;
+      }
+
+      const originalText = btnEl.innerText;
+      btnEl.disabled = true;
+      btnEl.innerText = "Downloading PDF...";
+
+      try {
+        const rollEl = certElement.querySelector(".cert-roll");
+        const rollText = rollEl ? rollEl.innerText.trim().replace(/[^a-zA-Z0-9_-]/g, "_") : "Certificate";
+        const fileName = `Diploma_${rollText}.pdf`;
+
+        const cloneWrap = document.createElement("div");
+        cloneWrap.style.position = "fixed";
+        cloneWrap.style.left = "-9999px";
+        cloneWrap.style.top = "0";
+        cloneWrap.style.width = "297mm";
+        cloneWrap.style.height = "210mm";
+        cloneWrap.style.zIndex = "-1";
+
+        const clonedCert = certElement.cloneNode(true);
+        clonedCert.style.boxShadow = "none";
+        clonedCert.style.margin = "0";
+        cloneWrap.appendChild(clonedCert);
+        document.body.appendChild(cloneWrap);
+
+        const opt = {
+          margin: 0,
+          filename: fileName,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            scrollX: 0,
+            scrollY: 0
+          },
+          jsPDF: {
+            unit: "mm",
+            format: "a4",
+            orientation: "landscape"
+          }
+        };
+
+        await html2pdf().set(opt).from(clonedCert).save();
+        document.body.removeChild(cloneWrap);
+      } catch (err) {
+        alert("Direct download failed, opening print menu instead.");
+        window.print();
+      } finally {
+        btnEl.disabled = false;
+        btnEl.innerText = originalText;
+      }
+    };
+
+    // ================= POPULATE PASSING YEARS DROPDOWN (1990 - 2099) =================
+    function populateYearDropdowns() {
+      const loginYearSelect = document.getElementById("login_year");
+      const adminYearSelect = document.getElementById("in_pass_year");
+
+      loginYearSelect.innerHTML = `<option value="">-- Select Passing Year --</option>`;
+      adminYearSelect.innerHTML = "";
+
+      for (let y = 1990; y <= 2099; y++) {
+        const opt1 = document.createElement("option");
+        opt1.value = String(y);
+        opt1.textContent = String(y);
+        loginYearSelect.appendChild(opt1);
+
+        const opt2 = document.createElement("option");
+        opt2.value = String(y);
+        opt2.textContent = String(y);
+        if (y === 2026) opt2.selected = true;
+        adminYearSelect.appendChild(opt2);
+      }
+    }
+    populateYearDropdowns();
+
+    // ================= STATE =================
+    let adminSecretCode = "Rinku_OPD_4545";
+    let cloudRecordsMap = {};
+    let editingRollKey = null;
+
+    let currentPhotoData = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='120' viewBox='0 0 100 120'><rect width='100' height='120' fill='%23e2e8f0'/><circle cx='50' cy='42' r='20' fill='%2394a3b8'/><path d='M20 105 C20 75, 80 75, 80 105' fill='%2394a3b8'/></svg>";
+    let currentSignCoordHTML = "<span class='sig-typed-text'>A. K. Sharma</span>";
+    let currentSignDirHTML = "<span class='sig-typed-text'>Dr. R. K. Verma</span>";
+
+    function makeSafeKey(roll) {
+      return roll.trim().toLowerCase().replace(/[.#$\[\]\/]/g, "_");
+    }
+
+    // Listen to Admin Secret Code from Firebase
+    const secretRef = ref(db, "settings/adminSecret");
+    onValue(secretRef, (snapshot) => {
+      if (snapshot.exists()) {
+        adminSecretCode = snapshot.val();
+      } else {
+        set(secretRef, "Rinku_OPD_4545").catch(() => {});
+      }
+      const adminInput = document.getElementById("admin_secret_input");
+      if (adminInput) adminInput.value = adminSecretCode;
+    });
+
+    // Listen to Real-Time Diploma Records from Firebase
+    const diplomasRef = ref(db, "diplomas");
+    onValue(diplomasRef, (snapshot) => {
+      cloudRecordsMap = snapshot.val() || {};
+      renderSavedRecordsList();
+    }, (error) => {
+      const badge = document.getElementById("firebase_status_badge");
+      if (badge) {
+        badge.style.background = "#fee2e2";
+        badge.style.color = "#991b1b";
+        badge.innerText = "● Check Firebase Config/Rules";
+      }
+    });
+
+    // ================= PORTAL LOGIN LOGIC =================
+    window.checkAdminTyping = function() {
+      const val = document.getElementById("login_roll").value.trim();
+      const yearGroup = document.getElementById("year_field_group");
+      document.getElementById("login_error").style.display = "none";
+
+      if (val === adminSecretCode) {
+        yearGroup.style.display = "none";
+      } else {
+        yearGroup.style.display = "block";
+      }
+    };
+
+    window.handlePortalSubmit = async function() {
+      const rollInput = document.getElementById("login_roll").value.trim();
+      const yearInput = document.getElementById("login_year").value;
+      const errBox = document.getElementById("login_error");
+      const btn = document.getElementById("btn_verify");
+
+      if (rollInput === adminSecretCode) {
+        document.getElementById("portal-screen").style.display = "none";
+        document.getElementById("student-view-screen").style.display = "none";
+        document.getElementById("admin-screen").style.display = "block";
+        document.getElementById("admin_secret_input").value = adminSecretCode;
+        syncLivePreview();
+        return;
+      }
+
+      if (!rollInput || !yearInput) {
+        errBox.innerText = "Please enter Roll Number and select Passing Year.";
+        errBox.style.display = "block";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Verifying from Cloud...";
+      errBox.style.display = "none";
+
+      try {
+        const safeKey = makeSafeKey(rollInput);
+        const snap = await get(ref(db, `diplomas/${safeKey}`));
+
+        if (snap.exists() && String(snap.val().passYear).trim() === yearInput) {
+          const studentData = snap.val();
+          document.getElementById("portal-screen").style.display = "none";
+          document.getElementById("admin-screen").style.display = "none";
+          document.getElementById("student-view-screen").style.display = "flex";
+
+          const mount = document.getElementById("student_cert_mount");
+          mount.innerHTML = "";
+          mount.appendChild(buildCertificateNode(studentData));
+        } else {
+          errBox.innerText = "No record found for this Roll Number & Year!";
+          errBox.style.display = "block";
+        }
+      } catch (err) {
+        errBox.innerText = "Connection error! Check Firebase configuration.";
+        errBox.style.display = "block";
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "View Result / Proceed";
+      }
+    };
+
+    window.backToPortal = function() {
+      document.getElementById("student-view-screen").style.display = "none";
+      document.getElementById("admin-screen").style.display = "none";
+      document.getElementById("portal-screen").style.display = "flex";
+      document.getElementById("login_roll").value = "";
+      document.getElementById("login_year").value = "";
+      document.getElementById("year_field_group").style.display = "block";
+      document.getElementById("login_error").style.display = "none";
+    };
+
+    // ================= ADMIN SECRET CODE UPDATE =================
+    window.updateAdminSecret = async function() {
+      const newCode = document.getElementById("admin_secret_input").value.trim();
+      if (!newCode || newCode.length < 4) {
+        alert("Please enter at least 4 characters for the admin code.");
+        return;
+      }
+      try {
+        await set(ref(db, "settings/adminSecret"), newCode);
+        adminSecretCode = newCode;
+        const status = document.getElementById("secret_status");
+        status.style.display = "block";
+        setTimeout(() => status.style.display = "none", 3000);
+      } catch (e) {
+        alert("Failed to update code: " + e.message);
+      }
+    };
+
+    // ================= RENDER CERTIFICATE DOM =================
+    function buildCertificateNode(data) {
+      const tpl = document.getElementById("certificate_template");
+      const clone = tpl.content.cloneNode(true);
+
+      const themeObj = getThemeForInstitute(data.inst);
+      const rootEl = clone.querySelector(".cert-root");
+      if (themeObj.className) {
+        rootEl.classList.add(themeObj.className);
+      }
+
+      clone.querySelector(".cert-watermark").innerText = data.watermark;
+      clone.querySelector(".cert-sr").innerText = data.sr;
+      clone.querySelector(".cert-date").innerText = data.date;
+      clone.querySelector(".cert-inst").innerText = data.inst;
+      clone.querySelector(".cert-sub").innerText = data.sub;
+      clone.querySelector(".cert-student").innerText = data.student;
+      clone.querySelector(".cert-rel").innerText = data.rel;
+      clone.querySelector(".cert-father").innerText = data.father;
+
+      const dobWrap = clone.querySelector(".cert-dob-wrap");
+      const dobEl = clone.querySelector(".cert-dob");
+      if (data.dob && data.dob.trim() !== "") {
+        dobEl.innerText = data.dob.trim();
+        dobWrap.style.display = "inline";
+      } else {
+        dobWrap.style.display = "none";
+      }
+
+      clone.querySelector(".cert-course").innerText = data.course;
+      clone.querySelector(".cert-roll").innerText = data.roll;
+      clone.querySelector(".cert-duration").innerText = data.duration;
+      clone.querySelector(".cert-grade").innerText = data.grade;
+      clone.querySelector(".cert-photo").src = data.photo;
+      clone.querySelector(".cert-sign-coord").innerHTML = data.signCoord;
+      clone.querySelector(".cert-sign-dir").innerHTML = data.signDir;
+
+      const qrEl = clone.querySelector(".cert-qr");
+      const dobQrText = (data.dob && data.dob.trim()) ? `|DOB:${data.dob.trim()}` : "";
+      new QRCode(qrEl, {
+        text: `SR:${data.sr}|NAME:${data.student}${dobQrText}|ROLL:${data.roll}|YEAR:${data.passYear}|GRADE:${data.grade}`,
+        width: 68,
+        height: 68,
+        colorDark: "#0f2537",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      return clone;
+    }
+
+    // ================= ADMIN LIVE PREVIEW & CRUD =================
+    function getFormDataObject() {
+      return {
+        roll: document.getElementById("in_roll").value.trim(),
+        passYear: document.getElementById("in_pass_year").value,
+        sr: document.getElementById("in_sr").value.trim(),
+        date: document.getElementById("in_date").value.trim(),
+        inst: document.getElementById("in_inst").value.trim(),
+        sub: document.getElementById("in_sub").value.trim(),
+        watermark: document.getElementById("in_watermark").value.trim(),
+        student: document.getElementById("in_student").value.trim(),
+        dob: document.getElementById("in_dob").value.trim(),
+        rel: document.getElementById("in_rel").value,
+        father: document.getElementById("in_father").value.trim(),
+        course: document.getElementById("in_course").value.trim(),
+        duration: document.getElementById("in_duration").value.trim(),
+        grade: document.getElementById("in_grade").value.trim(),
+        photo: currentPhotoData,
+        signCoord: currentSignCoordHTML,
+        signDir: currentSignDirHTML,
+        updatedAt: Date.now()
+      };
+    }
+
+    window.syncLivePreview = function() {
+      const formData = getFormDataObject();
+      const themeObj = getThemeForInstitute(formData.inst);
+      const badge = document.getElementById("active_theme_label");
+      if (badge) {
+        badge.innerText = `Active Style: ${themeObj.label}`;
+      }
+
+      const mount = document.getElementById("admin_cert_mount");
+      mount.innerHTML = "";
+      mount.appendChild(buildCertificateNode(formData));
+    };
+
+    window.saveStudentDiploma = async function() {
+      const data = getFormDataObject();
+      if (!data.roll || !data.student || !data.passYear) {
+        alert("Roll Number, Passing Year, and Student Name are required!");
+        return;
+      }
+      if (data.roll === adminSecretCode) {
+        alert("Student Roll Number cannot be the same as Admin Secret Code!");
+        return;
+      }
+
+      const btn = document.getElementById("btn_save_db");
+      btn.disabled = true;
+      btn.innerText = "Saving to Firebase...";
+
+      try {
+        const newKey = makeSafeKey(data.roll);
+        if (editingRollKey && editingRollKey !== newKey) {
+          await remove(ref(db, `diplomas/${editingRollKey}`));
+        }
+        await set(ref(db, `diplomas/${newKey}`), data);
+        editingRollKey = newKey;
+        alert(`Diploma saved live in Firebase for ${data.student} (Roll: ${data.roll}, Year: ${data.passYear})!`);
+      } catch (e) {
+        alert("Error saving to Firebase: " + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Save / Update in Firebase";
+      }
+    };
+
+    function renderSavedRecordsList() {
+      const keys = Object.keys(cloudRecordsMap);
+      document.getElementById("record_count").innerText = keys.length;
+      const listEl = document.getElementById("saved_records_list");
+      listEl.innerHTML = "";
+
+      if (keys.length === 0) {
+        listEl.innerHTML = "<div style='padding:10px; font-size:11px; color:#64748b; text-align:center;'>No diplomas in Firebase yet.</div>";
+        return;
+      }
+
+      keys.forEach(key => {
+        const rec = cloudRecordsMap[key];
+        const div = document.createElement("div");
+        div.className = "record-item";
+        div.innerHTML = `
+          <div>
+            <strong>${rec.student}</strong><br>
+            <span style="color:#64748b;">Roll: ${rec.roll} | Year: ${rec.passYear}</span>
+          </div>
+          <div class="record-actions">
+            <button class="btn-edit" onclick="editRecord('${key}')">Edit</button>
+            <button class="btn-del" onclick="deleteRecord('${key}', '${rec.roll}')">Del</button>
+          </div>
+        `;
+        listEl.appendChild(div);
+      });
+    }
+
+    window.editRecord = function(key) {
+      const rec = cloudRecordsMap[key];
+      if (!rec) return;
+
+      editingRollKey = key;
+      document.getElementById("in_roll").value = rec.roll;
+      document.getElementById("in_pass_year").value = rec.passYear;
+      document.getElementById("in_sr").value = rec.sr;
+      document.getElementById("in_date").value = rec.date;
+      document.getElementById("in_inst").value = rec.inst;
+      document.getElementById("in_sub").value = rec.sub;
+      document.getElementById("in_watermark").value = rec.watermark;
+      document.getElementById("in_student").value = rec.student;
+      document.getElementById("in_dob").value = rec.dob || "";
+      document.getElementById("in_rel").value = rec.rel;
+      document.getElementById("in_father").value = rec.father;
+      document.getElementById("in_course").value = rec.course;
+      document.getElementById("in_duration").value = rec.duration;
+      document.getElementById("in_grade").value = rec.grade;
+
+      currentPhotoData = rec.photo;
+      currentSignCoordHTML = rec.signCoord;
+      currentSignDirHTML = rec.signDir;
+
+      syncLivePreview();
+    };
+
+    window.deleteRecord = async function(key, roll) {
+      if (!confirm(`Delete diploma for Roll No: ${roll} from Firebase?`)) return;
+      try {
+        await remove(ref(db, `diplomas/${key}`));
+      } catch (e) {
+        alert("Delete failed: " + e.message);
+      }
+    };
+
+    window.resetFormForNew = function() {
+      editingRollKey = null;
+      document.getElementById("in_roll").value = "";
+      document.getElementById("in_student").value = "";
+      document.getElementById("in_dob").value = "";
+      document.getElementById("in_father").value = "";
+      document.getElementById("in_sr").value = "NICE/2026/" + Math.floor(1000 + Math.random() * 9000);
+      syncLivePreview();
+    };
+
+    // ================= AUTO-COMPRESSED PHOTO & SIGNATURES =================
+    function compressImageToBase64(file, maxWidth, maxHeight, callback) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height *= maxWidth / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width *= maxHeight / height;
+              height = maxHeight;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          callback(canvas.toDataURL("image/jpeg", 0.8));
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    window.loadPhoto = function(input) {
+      if (input.files && input.files[0]) {
+        compressImageToBase64(input.files[0], 250, 300, (compressedDataUrl) => {
+          currentPhotoData = compressedDataUrl;
+          syncLivePreview();
+        });
+      }
+    };
+
+    window.switchSignMode = function(role, mode, btnEl) {
+      const parentCard = btnEl.closest(".section-card");
+      parentCard.querySelectorAll(".sign-tab").forEach(t => t.classList.remove("active"));
+      btnEl.classList.add("active");
+
+      parentCard.querySelectorAll(".sign-mode-box").forEach(box => box.classList.remove("active"));
+      document.getElementById(`${role}_${mode}`).classList.add("active");
+
+      if (mode === "type") {
+        updateTypedSign(role);
+      } else if (mode === "draw") {
+        syncCanvasSign(role);
+      }
+    };
+
+    window.updateTypedSign = function(role) {
+      const val = document.getElementById(`type_${role}_input`).value;
+      const html = val ? `<span class="sig-typed-text">${val}</span>` : "";
+      if (role === "coord") currentSignCoordHTML = html;
+      else currentSignDirHTML = html;
+      syncLivePreview();
+    };
+
+    window.uploadSignImg = function(input, role) {
+      if (input.files && input.files[0]) {
+        compressImageToBase64(input.files[0], 240, 90, (compressedUrl) => {
+          const html = `<img src="${compressedUrl}" alt="Signature" />`;
+          if (role === "coord") currentSignCoordHTML = html;
+          else currentSignDirHTML = html;
+          syncLivePreview();
+        });
+      }
+    };
+
+    function initSignaturePad(role) {
+      const canvas = document.getElementById(`canvas_${role}`);
+      const ctx = canvas.getContext("2d");
+      let isDrawing = false;
+
+      ctx.strokeStyle = "#0f2537";
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+
+      function startDraw(e) {
+        isDrawing = true;
+        const pos = getCoords(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        e.preventDefault();
+      }
+
+      function draw(e) {
+        if (!isDrawing) return;
+        const pos = getCoords(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        syncCanvasSign(role);
+        e.preventDefault();
+      }
+
+      function endDraw() {
+        isDrawing = false;
+      }
+
+      canvas.addEventListener("mousedown", startDraw);
+      canvas.addEventListener("mousemove", draw);
+      window.addEventListener("mouseup", endDraw);
+
+      canvas.addEventListener("touchstart", startDraw, { passive: false });
+      canvas.addEventListener("touchmove", draw, { passive: false });
+      window.addEventListener("touchend", endDraw);
+    }
+
+    function syncCanvasSign(role) {
+      const canvas = document.getElementById(`canvas_${role}`);
+      const html = `<img src="${canvas.toDataURL("image/png")}" alt="Signature" />`;
+      if (role === "coord") currentSignCoordHTML = html;
+      else currentSignDirHTML = html;
+      syncLivePreview();
+    }
+
+    window.clearPad = function(role) {
+      const canvas = document.getElementById(`canvas_${role}`);
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (role === "coord") currentSignCoordHTML = "";
+      else currentSignDirHTML = "";
+      syncLivePreview();
+    };
+
+    // Init
+    initSignaturePad("coord");
+    initSignaturePad("dir");
+  </script>
+</body>
+</html>
